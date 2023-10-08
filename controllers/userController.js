@@ -7,7 +7,7 @@ module.exports = {
   // Get all students
   async getUsers(req, res) {
     try {
-      const users = await Student.find();
+      const users = await User.find();
 
       res.json(users);
     } catch (err) {
@@ -19,7 +19,8 @@ module.exports = {
   async getSingleUser(req, res) {
     try {
       const user = await User.findOne({ _id: req.params.userId })
-        .select('-__v');
+        .select('-__v').populate('thoughts')
+        .populate('friends');
 
       if (!user) {
         return res.status(404).json({ message: 'No user with that ID' })
@@ -41,23 +42,38 @@ module.exports = {
     }
   },
   // Delete a student and remove them from the course
-  async deleteStudent(req, res) {
+  async deleteUser(req, res) {
     try {
-      const student = await Student.findOneAndRemove({ _id: req.params.studentId });
+      const user = await User.findOneAndRemove({ _id: req.params.userId });
 
-      if (!student) {
-        return res.status(404).json({ message: 'No such student exists' });
-      }
+      if (!user) {
+        return res.status(404).json({ message: 'No such user exists' });
+      }     
 
-      
-
-      res.json({ message: 'Student successfully deleted' });
+      res.json({ message: 'user successfully deleted' });
     } catch (err) {
       console.log(err);
       res.status(500).json(err);
     }
   },
+async updateUser(req, res){
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.userId },
+      {$set: req.body},
+      {new: true}
+      );
 
+    if (!user) {
+      return res.status(404).json({ message: 'No such user exists' });
+    }     
+
+    res.json({ message: 'user successfully updated' });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+},
 //   // Add an assignment to a student
 //   async addAssignment(req, res) {
 //     console.log('You are adding an assignment');
